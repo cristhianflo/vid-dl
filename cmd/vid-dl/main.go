@@ -6,6 +6,7 @@ import (
 	"os/exec"
 
 	"cristhianflo/vid-dl/internal/input"
+	"cristhianflo/vid-dl/internal/ytdlp"
 )
 
 func main() {
@@ -31,5 +32,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Valid YouTube URL, video ID: %v\n", parsedURL)
+	ytdlpResult, err := ytdlp.GetVideoInfo(parsedURL)
+	if err != nil {
+		fmt.Printf("Error getting ytdlp result: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Valid YouTube URL\nResult: %v\n", ytdlpResult)
 }
