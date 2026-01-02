@@ -7,9 +7,16 @@ import (
 	"strings"
 )
 
+type VideoType int
+
+const (
+	YoutubeVideo VideoType = iota
+)
+
 type ParsedURL struct {
 	OriginalURL *url.URL
 	VideoID     string
+	Type        VideoType
 }
 
 func ParseYouTubeURL(userInput string) (*ParsedURL, error) {
@@ -24,6 +31,7 @@ func ParseYouTubeURL(userInput string) (*ParsedURL, error) {
 
 	var parsedURL ParsedURL
 	parsedURL.OriginalURL = u
+	parsedURL.Type = YoutubeVideo
 	host := strings.TrimPrefix(u.Host, "www.")
 
 	switch host {
