@@ -48,6 +48,9 @@ type ytDLPJson struct {
 
 func GetVideoInfo(parsed *input.ParsedURL) (*YtdlpResult, error) {
 	cmd := exec.Command("yt-dlp", "-j", parsed.OriginalURL.String())
+func GetFormats(parsed *input.VideoSource) (*YtdlpResult, error) {
+func GetFormats(source *input.VideoSource) (*YtdlpResult, error) {
+	cmd := exec.Command("yt-dlp", "--no-playlist", "-j", "--format-sort=resolution,ext,tbr", source.OriginalURL.String())
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to run yt-dlp: %w", err)
