@@ -20,7 +20,7 @@ type VideoSource struct {
 }
 
 func ParseYouTubeURL(input string) (*VideoSource, error) {
-	u, err := IsEmail(input)
+	u, err := IsValidURL(input)
 	if err != nil {
 		return nil, errors.New("Input is not a valid URL.")
 	}

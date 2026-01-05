@@ -15,7 +15,7 @@ func IsEmpty(str string) error {
 	return nil
 }
 
-func IsEmail(str string) (*url.URL, error) {
+func IsValidURL(str string) (*url.URL, error) {
 	u, err := url.Parse(str)
 	if err != nil || u.Scheme == "" || u.Host == "" {
 		return nil, errors.New("Input is not a valid URL.")
