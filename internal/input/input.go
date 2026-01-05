@@ -13,19 +13,20 @@ const (
 	YoutubeVideo VideoType = iota
 )
 
+type VideoURL struct {
+	OriginalURL *url.URL
+}
+
 type VideoSource struct {
+	*VideoURL
 	OriginalURL *url.URL
 	VideoID     string
 	Type        VideoType
 }
 
-func ParseYouTubeURL(input string) (*VideoSource, error) {
-	u, err := IsValidURL(input)
-	if err != nil {
-		return nil, errors.New("Input is not a valid URL.")
-	}
-
+func GetVideoSource(videoURL *VideoURL) (*VideoSource, error) {
 	var videoSource VideoSource
+	u := videoURL.OriginalURL
 	videoSource.OriginalURL = u
 	videoSource.Type = YoutubeVideo
 	host := strings.TrimPrefix(u.Host, "www.")
