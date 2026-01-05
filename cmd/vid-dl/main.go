@@ -3,40 +3,40 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 
+	"cristhianflo/vid-dl/internal/downloader"
 	"cristhianflo/vid-dl/internal/input"
-	"cristhianflo/vid-dl/internal/ytdlp"
+	"cristhianflo/vid-dl/internal/tui"
 )
 
 func main() {
-	var videoURL string
-
-	if len(os.Args) > 1 {
-		videoURL = os.Args[1]
-	} else {
-		cmd := exec.Command("gum", "input", "--placeholder", "Enter the video URL...")
-		cmd.Stdin = os.Stdin
-		cmd.Stderr = os.Stderr
-		output, err := cmd.Output()
-		if err != nil {
-			fmt.Printf("Error running gum: %v\n", err)
-			os.Exit(1)
-		}
-		videoURL = string(output)
-	}
-
-	parsedURL, err := input.ParseYouTubeURL(videoURL)
+	videoURL, err := tui.GetVideoURL(os.Args)
 	if err != nil {
-		fmt.Printf("Invalid YouTube URL: %v\n", err)
+		fmt.Printf("Error getting video URL: %v\n", err)
 		os.Exit(1)
 	}
 
-	ytdlpResult, err := ytdlp.GetVideoInfo(parsedURL)
+	videoSource, err := input.GetVideoSource(videoURL)
 	if err != nil {
-		fmt.Printf("Error getting ytdlp result: %v\n", err)
+		fmt.Printf("Error getting video source: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Valid YouTube URL\nResult: %v\n", ytdlpResult)
+	videoDownloader, err := downloader.NewDownloader(videoSource)
+	if err != nil {
+		fmt.Printf("Error creating video downloader: %v\n", err)
+		os.Exit(1)
+	}
+	formats, err := videoDownloader.GetFormats()
+	if err != nil {
+		fmt.Printf("Error getting video formats: %v\n", err)
+		os.Exit(1)
+	}
+
+	p := tui.NewTui(tui.NewModel(formats))
+	_, err = p.Run()
+	if err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
+	}
 }

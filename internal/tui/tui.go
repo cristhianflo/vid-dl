@@ -16,6 +16,10 @@ type model struct {
 	selected int
 }
 
+func NewTui(model model) tea.Program {
+	return *tea.NewProgram(model)
+}
+
 func NewModel(result *downloader.Video) model {
 	var model model
 
