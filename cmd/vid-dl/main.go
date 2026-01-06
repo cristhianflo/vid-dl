@@ -27,13 +27,14 @@ func main() {
 		fmt.Printf("Error creating video downloader: %v\n", err)
 		os.Exit(1)
 	}
-	formats, err := videoDownloader.GetFormats()
+
+	model, err := tui.NewModel(videoDownloader)
 	if err != nil {
 		fmt.Printf("Error getting video formats: %v\n", err)
 		os.Exit(1)
 	}
 
-	p := tui.NewTui(tui.NewModel(formats))
+	p := tui.NewTui(*model)
 	_, err = p.Run()
 	if err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

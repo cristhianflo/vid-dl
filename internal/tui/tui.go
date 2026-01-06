@@ -5,89 +5,119 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 )
 
+type downloadDoneMsg struct{}
+type downloadErrMsg struct {
+	err error
+}
+
 type model struct {
-	title    string
-	url      string
-	formats  []downloader.Format
-	choices  []string
-	cursor   int
-	selected int
+	formats    []downloader.Format
+	downloader downloader.Downloader
+	form       *huh.Form
+	status     string
 }
 
-func NewTui(model model) tea.Program {
-	return *tea.NewProgram(model)
+func NewTui(model model) *tea.Program {
+	return tea.NewProgram(model)
 }
 
-func NewModel(result *downloader.Video) model {
-	var model model
-
-	for _, choice := range result.Formats {
-		formatString := fmt.Sprintf("%s | %s | %s", choice.Resolution, choice.Ext, humanFileSize(choice.Filesize))
-		model.choices = append(model.choices, formatString)
+func NewModel(d downloader.Downloader) (*model, error) {
+	result, err := d.GetFormats()
+	if err != nil {
+		return nil, err
 	}
-	model.formats = result.Formats
-	return model
+
+	var m model
+	var opts []huh.Option[int]
+	for i, format := range result.Formats {
+		label := fmt.Sprintf("%s | %s | %s", format.Resolution, format.Ext, humanFileSize(format.Filesize))
+		opts = append(opts, huh.NewOption(label, i))
+	}
+
+	// Check if we have any formats
+	if len(opts) == 0 {
+		return nil, fmt.Errorf("no video formats available")
+	}
+
+	m.form = huh.NewForm(
+		huh.NewGroup(
+			// Display title
+			huh.NewNote().Title("Title").Description(result.Title),
+			// Display video ID
+			huh.NewNote().Title("ID").Description(result.ID),
+			// Display format selector
+			huh.NewSelect[int]().
+				Key("format").
+				Title("Format").
+				Options(opts...),
+		),
+	)
+
+	m.formats = result.Formats
+	m.downloader = d
+	return &m, nil
 }
 
 func (m model) Init() tea.Cmd {
-	// Just return `nil`, which means "no I/O right now, please."
-	return nil
+	return m.form.Init()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
+		// If download is done, pressing enter/esc/q exits
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
+			return m, tea.Interrupt
+		case "esc", "q":
 			return m, tea.Quit
+		}
 
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
+	case downloadErrMsg:
+		m.status = fmt.Sprintf("Download failed: %v", msg.err)
+		return m, tea.Quit
 
-		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
+	case downloadDoneMsg:
+		m.status = "Download completed successfully!"
+		return m, tea.Quit
+	}
 
-		case "enter", " ":
-			m.selected = m.cursor
-			return m, tea.Quit
+	var cmds []tea.Cmd
+
+	form, cmd := m.form.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		m.form = f
+		cmds = append(cmds, cmd)
+	}
+
+	if m.form.State == huh.StateCompleted {
+		selectedFormat := m.form.GetInt("format")
+
+		if selectedFormat >= 0 && selectedFormat < len(m.formats) {
+			format := &m.formats[selectedFormat]
+			// Set status to show download starting
+			m.status = "Downloading..."
+			cmds = append(cmds, func() tea.Msg {
+				err := m.downloader.DownloadVideo(format)
+				if err != nil {
+					return downloadErrMsg{err: err}
+				}
+				return downloadDoneMsg{}
+			})
 		}
 	}
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
-	// The header
-	s := " Video downloader\n\n"
-
-	for i, choice := range m.choices {
-
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
-		if m.cursor == i {
-			cursor = " ▶" // cursor!
-		}
-
-		// Is this choice selected?
-		checked := "○" // not selected
-		if m.selected == i {
-			checked = "●" // selected!
-		}
-
-		// Render the row
-		s += fmt.Sprintf("%s %s %s\n", cursor, checked, choice)
+	// Show status if not empty, otherwise just show form
+	if m.status != "" {
+		return m.status + "\n" + m.form.View()
 	}
-
-	// The footer
-	s += "\nPress q to quit.\n"
-
-	// Send the UI for rendering
-	return s
+	return m.form.View()
 }
