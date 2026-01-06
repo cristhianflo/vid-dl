@@ -31,6 +31,7 @@ type Format struct {
 
 type Downloader interface {
 	GetFormats() (*Video, error)
+	DownloadVideo(format *Format) error
 }
 
 func NewDownloader(source *input.VideoSource) (Downloader, error) {

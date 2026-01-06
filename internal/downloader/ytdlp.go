@@ -127,3 +127,26 @@ func (d *YtdlpDownloader) GetFormats() (*Video, error) {
 	result.Formats = finalFormats
 	return result, nil
 }
+
+func (d *YtdlpDownloader) DownloadVideo(format *Format) error {
+	var args []string
+	if format.ID == "bestaudio" {
+		args = []string{
+			"-f", format.ID,
+			"-x", "--audio-format", string(format.Ext),
+		}
+	} else {
+		args = []string{
+			"-f", format.ID,
+			d.source.OriginalURL.String(),
+		}
+	}
+
+	cmd := exec.Command("yt-dlp", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to download video: %w, yt-dlp output: %s", err, string(output))
+	}
+
+	return nil
+}
