@@ -134,6 +134,7 @@ func (d *YtdlpDownloader) DownloadVideo(format *Format) error {
 		args = []string{
 			"-f", format.ID,
 			"-x", "--audio-format", string(format.Ext),
+			d.source.OriginalURL.String(),
 		}
 	} else {
 		args = []string{
