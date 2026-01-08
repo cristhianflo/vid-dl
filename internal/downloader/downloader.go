@@ -1,8 +1,8 @@
 package downloader
 
 import (
-	"cristhianflo/vid-dl/internal/input"
 	"errors"
+	"github.com/cristhianflo/vid-dl/internal/input"
 )
 
 type FileExtension string

@@ -1,9 +1,9 @@
 package downloader
 
 import (
-	"cristhianflo/vid-dl/internal/input"
 	"encoding/json"
 	"fmt"
+	"github.com/cristhianflo/vid-dl/internal/input"
 	"os/exec"
 )
 

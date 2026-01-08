@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"cristhianflo/vid-dl/internal/downloader"
-	"cristhianflo/vid-dl/internal/input"
-	"cristhianflo/vid-dl/internal/tui"
+	"github.com/cristhianflo/vid-dl/internal/downloader"
+	"github.com/cristhianflo/vid-dl/internal/input"
+	"github.com/cristhianflo/vid-dl/internal/tui"
 )
 
 func main() {

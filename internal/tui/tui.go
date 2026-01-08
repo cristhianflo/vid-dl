@@ -1,8 +1,8 @@
 package tui
 
 import (
-	"cristhianflo/vid-dl/internal/downloader"
 	"fmt"
+	"github.com/cristhianflo/vid-dl/internal/downloader"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
@@ -115,9 +115,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	// Show status if not empty, otherwise just show form
+	var out string
 	if m.status != "" {
-		return m.status + "\n" + m.form.View()
+		out += SectionTitleStyle.Render(m.status) + "\n\n"
 	}
-	return m.form.View()
+	// Render the huh form as the body
+	out += m.form.View()
+	// Footer help actions
+	out += "\n" + HelpKeyStyle.Render("ctrl") + HelpDescStyle.Render("↵ submit")
+	out += HelpKeyStyle.Render("tab") + HelpDescStyle.Render("navigate")
+	out += HelpKeyStyle.Render("^k") + HelpDescStyle.Render("actions")
+	return out
 }

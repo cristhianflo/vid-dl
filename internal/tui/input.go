@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"cristhianflo/vid-dl/internal/input"
+	"github.com/cristhianflo/vid-dl/internal/input"
 
 	"github.com/charmbracelet/huh"
 )
