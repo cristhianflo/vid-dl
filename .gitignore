@@ -2,3 +2,5 @@
 vid-dl
 !cmd/vid-dl
 
+# Added by goreleaser init:
+dist/
