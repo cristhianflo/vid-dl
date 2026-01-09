@@ -48,6 +48,9 @@ aurs:
       install -Dm755 "./vid-dl" "${pkgdir}/usr/bin/vid-dl"
       # license
       install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/vid-dl/LICENSE"
+    depends:
+      - yt-dlp
+      - ffmpeg
 
 checksum:
   name_template: "checksums.txt"
